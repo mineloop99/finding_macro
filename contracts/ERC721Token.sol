@@ -3,8 +3,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ERC721Token is ERC721URIStorage {
+contract ERC721Token is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     uint256 public mintFee = 0 wei;
@@ -16,6 +17,7 @@ contract ERC721Token is ERC721URIStorage {
 
     function mint(address account, string memory _uri)
         public
+        onlyOwner
         returns (uint256)
     {
         uint256 newItemId = _tokenIds.current();

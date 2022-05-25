@@ -6,10 +6,11 @@ describe("Testing", function () {
     const Factory = await ethers.getContractFactory("Factory");
     const factory = await Factory.deploy();
     await factory.deployed();
-    await factory.deployERC721(
+    let a = await factory.deployERC721(
       "TestERC721",
       "NFT"
     );
+    a.
     expect(1
      ).to.equal(1);
   });

@@ -5,9 +5,6 @@ import "./ERC1155Token.sol";
 import "./ERC721Token.sol";
 
 interface IERC721Factory {
-    event ERC721Created(address owner, address tokenContract); //emitted when ERC721 token is deployed
-    event ERC721Minted(address owner, address tokenContract); //emmited when ERC721 token is minted
-
     function deployERC721(
         string calldata _contractName,
         string calldata _symbol
@@ -18,9 +15,19 @@ interface IERC721Factory {
         address _owner,
         string memory _name
     ) external;
+
+    function getERC721byIndex(uint256 _index)
+        external
+        view
+        returns (address _contract);
+
+    function transferOwnership(address newOwner) external;
 }
 
-contract ERC721Factory is IERC721Factory {
+contract ERC721Factory is Ownable {
+    event ERC721Created(address owner, address tokenContract); //emitted when ERC721 token is deployed
+    event ERC721Minted(address owner, address tokenContract); //emmited when ERC721 token is minted
+
     ERC721Token[] public erc721Tokens; //an array that contains different ERC1155 tokens deployed
     mapping(uint256 => address) public erc721IndexToContract; //index to contract address mapping
     mapping(uint256 => address) public erc721IndexToOwner; //index to ERC1155 owner address
@@ -36,7 +43,7 @@ contract ERC721Factory is IERC721Factory {
     function deployERC721(
         string calldata _contractName,
         string calldata _symbol
-    ) public override returns (address) {
+    ) public returns (address) {
         ERC721Token t = new ERC721Token(_contractName, _symbol);
         erc721Tokens.push(t);
         erc721IndexToContract[erc721Tokens.length - 1] = address(t);
@@ -56,7 +63,7 @@ contract ERC721Factory is IERC721Factory {
         uint256 _index,
         address _owner,
         string memory _name
-    ) public override {
+    ) public {
         erc721Tokens[_index].mint(_owner, _name);
         emit ERC721Minted(_owner, address(erc721Tokens[_index]));
     }
@@ -79,16 +86,17 @@ contract ERC721Factory is IERC721Factory {
             token.balanceOf(erc721IndexToOwner[_id])
         );
     }
+
+    function getERC721byIndex(uint256 _index)
+        public
+        view
+        returns (address _contract)
+    {
+        return address(erc721Tokens[_index]);
+    }
 }
 
 interface IERC1155Factory {
-    event ERC1155Created(address owner, address tokenContract); //emitted when ERC1155 token is deployed
-    event ERC1155Minted(
-        address owner,
-        address tokenContract,
-        uint256 indexed amount
-    );
-
     function deployERC1155(string memory _contractName, string memory _uri)
         external
         returns (address);
@@ -99,12 +107,25 @@ interface IERC1155Factory {
         string memory _name,
         uint256 _amount
     ) external;
+
+    function getERC1155byIndex(uint256 _index)
+        external
+        view
+        returns (address _contract);
+
+    function transferOwnership(address newOwner) external;
 }
 
-contract ERC1155Factory is IERC1155Factory {
+contract ERC1155Factory is Ownable {
     ERC1155Token[] public erc1155Tokens; //an array that contains different ERC1155 tokens deployed
     mapping(uint256 => address) public erc1155IndexToContract; //index to contract address mapping
     mapping(uint256 => address) public erc1155IndexToOwner; //index to ERC1155 owner address
+    event ERC1155Created(address owner, address tokenContract); //emitted when ERC1155 token is deployed
+    event ERC1155Minted(
+        address owner,
+        address tokenContract,
+        uint256 indexed amount
+    );
 
     /*
     deployERC1155 - deploys a ERC1155 token with given parameters - returns deployed address
@@ -116,7 +137,6 @@ contract ERC1155Factory is IERC1155Factory {
     */
     function deployERC1155(string calldata _contractName, string calldata _uri)
         public
-        override
         returns (address)
     {
         ERC1155Token t = new ERC1155Token(_contractName, _uri);
@@ -139,7 +159,7 @@ contract ERC1155Factory is IERC1155Factory {
         address _owner,
         string memory _name,
         uint256 _amount
-    ) public override {
+    ) public {
         erc1155Tokens[_index].mint(
             _owner,
             erc1155Tokens[_index].nameToId(_name),
@@ -191,6 +211,14 @@ contract ERC1155Factory is IERC1155Factory {
             token.balanceOf(erc1155IndexToOwner[_index], _id)
         );
     }
+
+    function getERC1155byIndex(uint256 _index)
+        public
+        view
+        returns (address _contract)
+    {
+        return address(erc1155Tokens[_index]);
+    }
 }
 
 contract Factory is Ownable {
@@ -231,5 +259,21 @@ contract Factory is Ownable {
         uint256 _amount
     ) public onlyOwner {
         erc1155Factory.mintERC1155(_index, _owner, _name, _amount);
+    }
+
+    function transferERC721ContractOwnership(uint256 _index, address _newOwner)
+        public
+        onlyOwner
+    {
+        IERC721Factory(erc721Factory.getERC721byIndex(_index))
+            .transferOwnership(_newOwner);
+    }
+
+    function transferERC1155ContractOwnership(uint256 _index, address _newOwner)
+        public
+        onlyOwner
+    {
+        IERC1155Factory(erc1155Factory.getERC1155byIndex(_index))
+            .transferOwnership(_newOwner);
     }
 }
