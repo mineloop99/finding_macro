@@ -6,12 +6,15 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: "https://api.avax.network/ext/bc/C/rpc",
-        blockNumber: 12690051,
+        url: "https://speedy-nodes-nyc.moralis.io/9485086d85846cac9a1e6060/eth/mainnet/archive",
+        blockNumber: 14841000
       },
         accounts: {
           accountsBalance: "10000000000000000000000000000",
         },
+      blockGasLimit: 20000000000,
+      gas: 112100000,
+      gasPrice: 80000000000
     },
   },
   mocha: {

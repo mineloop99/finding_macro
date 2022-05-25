@@ -6,8 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract ERC1155Token is ERC1155, Ownable {
-    string[] public names; //string array of names
-    uint256[] public ids; //uint array of ids
     string public baseMetadataURI; //the token metadata URI
     string public name; //the token mame
     uint256 public mintFee = 0 wei; //mintfee, 0 by default. only used in mint function, not batch.
@@ -18,29 +16,11 @@ contract ERC1155Token is ERC1155, Ownable {
     /*
     constructor is executed when the factory contract calls its own deployERC1155 method
     */
-    constructor(
-        string memory _contractName,
-        string memory _uri,
-        string[] memory _names,
-        uint256[] memory _ids
-    ) ERC1155(_uri) {
-        names = _names;
-        ids = _ids;
-        createMapping();
+    constructor(string memory _contractName, string memory _uri) ERC1155(_uri) {
         setURI(_uri);
         baseMetadataURI = _uri;
         name = _contractName;
         transferOwnership(tx.origin);
-    }
-
-    /*
-    creates a mapping of strings to ids (i.e ["one","two"], [1,2] - "one" maps to 1, vice versa.)
-    */
-    function createMapping() private {
-        for (uint256 id = 0; id < ids.length; id++) {
-            nameToId[names[id]] = ids[id];
-            idToName[ids[id]] = names[id];
-        }
     }
 
     /*
@@ -60,10 +40,6 @@ contract ERC1155Token is ERC1155, Ownable {
                     ".json"
                 )
             );
-    }
-
-    function getNames() public view returns (string[] memory) {
-        return names;
     }
 
     /*
